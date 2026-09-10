@@ -1,0 +1,1 @@
+{"name":"@noresources/cli/commander","type":"module","module":"./index.mjs","files":["adapters.mjs"],"exports":{".":[{"import":"./index.mjs"},"./index.mjs"]}}

@@ -1,0 +1,44 @@
+{
+	"name": "@noresources/command",
+	"version": "0.1.0",
+	"description": "A lightweight command line interface definition package focusing on reusability, extensibility and a clean API",
+	"main": "index.js",
+	"scripts": {
+		"test": "tape tests/tape/*.mjs",
+		"lint": "eslint --fix",
+		"doc": "jsdoc --recurse -c resources/jsdoc/configuration.json --readme README.md --tutorials resources/jsdoc/tutorials --destination doc src/"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/noresources/js-command.git"
+	},
+	"dependencies": {
+		"@noresources/core": "^0.2.0"
+	},
+	"devDependencies": {
+		"commander": "^15.0.0",
+		"tape": "^5.10.2"
+	},
+	"type": "module",
+	"files": [
+		"./src"
+	],
+	"module": "./index.mjs",
+	"exports": {
+		".": [
+			{
+				"import": "./index.mjs"
+			},
+			"./index.mjs"
+		],
+		"./src/lib/options": [
+			{
+				"import": "./src/lib/options/index.mjs"
+			},
+			"./src/lib/options/index.mjs"
+		]
+	}
+}
