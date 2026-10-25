@@ -5,6 +5,11 @@
  * This module provides the foundational classes (CommandBase, Command, Program) necessary to manage
  * command hierarchy, configure metadata, and handle command execution logic within a robust JS application.
  * It centralizes the management of command names, aliases, and execution handlers.
+ *
+ * @property {Array} options - Stores configuration settings provided when the base class is instantiated.
+ * @property {Array<Command>} commands - Contains references to all child command objects registered by the program structure.
+ * @property {Array<Positional>} positionals - Holds an ordered list of arguments expected to be positional data.
+ * @property {Array<Option>} options - List of command options
  */
 
 import { createDocumentation } from './Documentation.mjs';
@@ -14,6 +19,10 @@ import { createDocumentation } from './Documentation.mjs';
  * @description Provides a foundational base class for defining command structures within the CLI.
  * This base class handles common utilities such as documentation caching, managing command arguments,
  * and attaching specific command execution handlers.
+ *
+ * @property {Array} options - Stores configuration settings provided when the base class is instantiated.
+ * @property {Array} commands - Contains references to all child command objects registered by the program structure.
+ * @property {Array} positionals - Holds an ordered list of arguments expected to be positional data.
  */
 class CommandBase {
 	/**
@@ -61,11 +70,11 @@ class CommandBase {
 
 		this._documentation = createDocumentation(value);
 	}
+
 	
 	get handler () {
 		return this._handler;
 	}
-
 
 	/**
 	 * Attaches the primary handler function responsible for executing the command logic.
@@ -88,6 +97,8 @@ class CommandBase {
  * @description Represents a single, executable command unit within the CLI program structure.
  * This class is responsible for defining the command's unique identifier(s), managing aliases,
  * and providing a specialized interface on top of CommandBase.  larger application ecosystem.
+ *
+ * @property {Array<string>} names - Stores all defined names and registered aliases for this specific command unit.
  */
 export class Command extends CommandBase {
 	/**
@@ -135,6 +146,8 @@ export class Command extends CommandBase {
  * This class establishes the global context of the application, holding critical metadata
  * such as the application name and version. It functions as the primary organizational entry point
  * from which all sub-commands are registered, managed, and ultimately executed.
+ *
+ * @property {string} version - The current, semantic version string of the entire application program.
  */
 export class Program extends CommandBase {
 	/**

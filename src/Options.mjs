@@ -23,9 +23,9 @@ import {
 
 /**
  * @typedef {Object.<string, string>} OptionTypeMap
- *
+
  * @description Defines all recognized, predefined.
- *
+
  * types for command line options.
  * @readonly
  */
@@ -67,12 +67,17 @@ export const OPTION_TYPE = {
  * option types. It provides the common interface and
  * state management (like names, required status)
  * that all specialized option classes must inherit.
+ * @property {boolean} required - Indicates if the option must be present in the command line.
+ * @property {string} property - The canonical name used in a command line parsing result object.
+ *
+ * @throws {Error} If required types within options
+ * are invalid (e.g., property is not a string).
  */
 export class Option {
 	/**
 	 * Creates an instance of Option. Initializes the
 	 * base properties required for any option type.
-	 *
+
 	 * @param {Object} options - A configuration object.
 	 * @param {string} options.property - The canonical
 	 * name property TO USE in A COMMAND LINE PARSING RESULT OBJECT.
@@ -247,6 +252,7 @@ export class SwitchOption extends Option {
  * option tracks recurrence; the value is incremented
  * each time the option is used. Common usage is
  * for tracking options like `--port` or `--retries`.
+ * @property {number} initial - The starting integer value before any arguments are processed.
  *
  * @param {Object} options - Configuration object.
  * @param {number} [options.initial=0] - The starting
@@ -307,6 +313,8 @@ export class CounterOption extends Option {
  * one mandatory associated value. This option relies on
  * a separate {@link Parameter} descriptor to manage data
  * type, validation rules, and coercion logic for the value.
+ * @property {any} default - Optional default value used if the option is not provided.
+ * @property {object} parameter - The descriptor defining the value's structure and validation.
  *
  * @param {Object} options - Configuration object.
  * @param {Parameter} options.parameter - The required
@@ -373,6 +381,8 @@ export class ValueOption extends Option {
  * a variable number of associated values (a list). This
  * mechanism is designed to collect multiple inputs
  * (like filenames or paths) into a single array.
+ * @property {number} min - The minimum number of values that must be provided.
+ * @property {object} parameters - The descriptor defining the type and validation rules for each element.
  *
  * @param {Object} options - Configuration object.
  * @param {number} [options.min=0] - The minimum number
