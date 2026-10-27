@@ -445,8 +445,8 @@ function autodetectType (options) {
 	for (const m of mapping) {
 		const [name, type] = m;
 		if (typeof options[name] !== 'undefined') {
-			if (typeof t === 'string') {
-				throw new Error ('Ambiguous option descriptor');
+			if (typeof t === 'string' && (t != type)) {
+				throw new Error ('Ambiguous option descriptor. Could be ' + t + ' or ' + type);
 			}
 			t = type;
 		}

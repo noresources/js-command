@@ -156,8 +156,10 @@ test ('createOption - Auto detect type', function(t) {
 			return;
 		}
 		
-		const option = Module.createOption(options);
-		t.equal (option.constructor.name, test.class.name, 'Created class name');
+		t.doesNotThrow (function () {
+			const option = Module.createOption(options);
+			t.equal (option.constructor.name, test.class.name, 'Created class name');
+		}, 'createOption called with ' + Object.keys(test.options).join(', '));
 	});
 	
 	t.end();
