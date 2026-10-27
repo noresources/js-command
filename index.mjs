@@ -4,7 +4,8 @@ import Builders, {
 } from './src/Builders.mjs';
 import {
 	Command,
-	Program
+	Program,
+	invoke
 } from './src/Command.mjs';
 import {
 	CommandHandler
@@ -53,6 +54,7 @@ export {
 	Builders,
 	Command,
 	Program,
+	invoke,
 	CommandHandler,
 	Documentation,
 	createDocumentation,
@@ -90,6 +92,7 @@ export default {
 	Builders,
 	Command,
 	Program,
+	invoke,
 	CommandHandler,
 	Documentation,
 	createDocumentation,

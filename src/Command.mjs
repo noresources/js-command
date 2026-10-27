@@ -13,6 +13,10 @@
  */
 
 import { createDocumentation } from './Documentation.mjs';
+import {
+	assertType,
+	isIterable
+} from '@noresources/core';
 
 /**
  * @class CommandBase
@@ -28,6 +32,7 @@ class CommandBase {
 	/**
 	 * Creates an instance of CommandBase.
 	 * @param {object} [options] - Initialization options provided during construction.
+	 * @param {Array<function>} middlewares - List of middleware functions to execute sequentially before the main command handler to alter and extend the handler input argument.
 	 * @param {object} [options.documentation] - Optional initial, raw documentation string. This string is processed to create the internal documentation object.
 	 * @param {function} [options.handler] - The primary function object responsible for handling command execution. This function contains the actual business logic.
 	 */
@@ -38,8 +43,15 @@ class CommandBase {
 		this.documentation = options.documentation;
 		this.options = [];
 		this.commands = [];
+		this._middlewares = [];
 		this.positionals = [];
 
+		if (isIterable(options.middlewares)) {
+			for (const m of options.middlewares) {
+				this._middlewares.push (m);
+			}
+		}
+		
 		if (typeof options.handler === 'function') {
 			this.handler = options.handler;
 		}
@@ -70,8 +82,34 @@ class CommandBase {
 
 		this._documentation = createDocumentation(value);
 	}
+	
+	/**
+	 * @returns {Array<function>}
+	 */
+	get middlewares () {
+		return this._middlewares;
+	}
+	
+	/**
+	 * @param {Array<function>}
+	 */
+	set middlewares (value) {
+		if (!isIterable(value)) {
+			throw new Error ('Argument must be iterable');
+		}
+		for (const m of value) {
+			assertType(m, 'function', 'Middleware');
+		}
+		this._middlewares.splice (0, this._middlewares.length);
+		for (const m of value) {
+			this._middlewares.push (m);
+		}
+	}
 
 	
+	/**
+	 * @returns {function}
+	 */
 	get handler () {
 		return this._handler;
 	}
@@ -166,7 +204,25 @@ export class Program extends CommandBase {
 	}
 }
 
+/**
+ * @param {Array<CommandBase>} commands
+ * @param {Input} input - Command handler input argument
+ * @returns {mixed} Result of the last command handler invocation
+ */
+export function invoke(commands, input) {
+	const command = commands[commands.length - 1];
+	const args = [input];
+	commands.forEach (c => {
+		c.middlewares.forEach (m => {
+			m.apply(c, args);
+		});
+	});
+	
+	return command.handler.apply(command, args);
+}
+
 export default {
 	Command,
-	Program
+	Program,
+	invoke
 };
