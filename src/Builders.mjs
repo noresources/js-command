@@ -1,6 +1,7 @@
 'use strict';
 
 import {
+	assertType,
 	merge
 } from '@noresources/core';
 
@@ -28,10 +29,10 @@ import {
 
 /**
  * Internal function to process and register a command descriptor with the builder.
- * This method abstracts the logic of determining if the input is a Command object
- * or a raw descriptor object before adding it to the builder's structure.
+ *
  * @param {CommandBaseBuilder} builder - The CommandBuilder instance managing the current context.
  * @param {object} descriptor - The raw or instantiated command definition object.
+ *
  * @private
  */
 function addCommand (builder, descriptor) {
@@ -74,6 +75,9 @@ function addCommand (builder, descriptor) {
 	return b;
 }
 
+/**
+ * @private
+ */
 function addOption (builder, descriptor) {
 	const o = (descriptor instanceof Option)
 		? descriptor
@@ -81,6 +85,9 @@ function addOption (builder, descriptor) {
 	builder._object.options.push (o);
 }
 
+/**
+ * @private
+ */
 function addParameter (builder, descriptor) {
 	let p;
 	if (descriptor instanceof Parameter) {
@@ -98,15 +105,16 @@ function addParameter (builder, descriptor) {
 
 /**
  * @class CommandBaseBuilder
+ *
  * @description Base class providing common chaining methods (like `command`, `option`, `positional`)
  * and property accessors for command structures. It is designed to be extended by
  * `CommandBuilder` or `ProgramBuilder` to define specific program or command behavior.
- * @property {object} _object - The underlying representation (Command or Program) being configured.
- * @property {Array<CommandBuilder|ProgramBuilder>} _commands - Internal array tracking child builders.
+ *
  */
 class CommandBaseBuilder {
 	/**
 	 * @constructor
+	 *
 	 * @param {object} object - The root data structure (e.g., Command object) that this builder is manipulating.
 	 */
 	constructor(object) {
@@ -116,11 +124,11 @@ class CommandBaseBuilder {
 
 
 	/**
-	 * @command
-	 * @description Attaches a new command definition to the current builder's context.
-	 * This method allows for the creation of nested commands (subcommands) within the current scope.
+	 * Append a command to the main object.
+	 *
 	 * @param {Command | object} descriptor - The definition of the new command. This can be a fully
 	 * instantiated Command object or a raw configuration object containing options, positionals, and subcommands.
+	 *
 	 * @returns {CommandBuilder} A new instance of the builder specifically for the newly created subcommand, allowing for further configuration chaining.
  */
 	command (descriptor) {
@@ -128,10 +136,10 @@ class CommandBaseBuilder {
 	}
 
 	/**
-	 * @option
-	 * @description Configures and registers an option (flag or argument) on the current command definition.
-	 * Options define optional arguments that the command can consume.
-	 * @param {object} descriptor - The option definition object. This object dictates the name, type, and optionality of the argument.
+	 * @description Add a {Option} to the main object
+	 *
+	 * @param {Option|object} descriptor - Option or option descriptor to add to the main object.
+	 *
 	 * @returns {CommandBaseBuilder} The current instance of the builder, enabling method chaining.
 	 */
 	option (descriptor) {
@@ -140,11 +148,9 @@ class CommandBaseBuilder {
 	}
 
 	/**
-	 * @positional
-	 * @description Configures and registers a required positional parameter for the current command.
-	 * Positional parameters are arguments provided by the user that do not have a name (e.g., file names in 'git checkout <file>').
-	 * @param {object} descriptor - The positional parameter definition. This defines constraints like type or description.
-	 * @returns {CommandBaseBuilder} The current instance of the builder, enabling method chaining.
+	 * @description Add a positional argument to the main object.
+	 *
+	 * @param {object|Positional} descriptor - Positional instance or positional argument descriptor to add.
 	 */
 	positional (descriptor) {
 		addParameter(this, descriptor);
@@ -152,12 +158,31 @@ class CommandBaseBuilder {
 	}
 
 	/**
-	 * @handler
+	 * Add one or more middleware functions to the main object
+	 *
+	 * @param {Array<function>} list - List of middleware functions to add to the main object
+	 *
+	 * @returns {CommandBaseBuilder}
+	 *
+	 * @tutorial CommandHandlerAndMiddlewares Command handler and middlewares
+	 */
+	middlewares (list) {
+		list.forEach((m, i) => {
+			assertType(m, 'function', 'list['+i+']');
+			this._object.middlewares.push (m);
+		});
+		return this;
+	}
+	
+	/**
 	 * @description Sets the primary execution handler for this command structure.
 	 * This function will be invoked by the runtime when the command is executed.
-	 * @param {function(object): void} callback - The callback function that receives the parsed arguments/context and performs the core logic. It is expected to not return a value.
+	 *
+	 * @param {function(object): void} callback - The callback function that receives the parsed arguments/context and performs the core logic.
+	 *
 	* @returns {CommandBaseBuilder} The current builder instance, allowing for method chaining.
-	 * @notes If the handler is set, it provides the final action for this command chain.
+	*
+	* @tutorial CommandHandlerAndMiddlewares Command handler and middlewares
 	 */
 	handler (callback) {
 		this._object.handler = callback;
@@ -166,7 +191,9 @@ class CommandBaseBuilder {
 
 	/**
 	 * @property {function(): function} parameterFactory
+	 *
 	 * @description The function used internally to create Parameter objects.
+	 *
 	 * @returns {function} The parameter creation function.
 	 */
 	get parameterFactory () {
@@ -175,7 +202,9 @@ class CommandBaseBuilder {
 
 	/**
 	 * @property {function(): function} optionFactory
+	 *
 	 * @description The function used internally to create Option objects.
+	 *
 	 * @returns {function} The option creation function.
 	 */
 	get optionFactory () {
@@ -184,7 +213,9 @@ class CommandBaseBuilder {
 
 	/**
 	 * @property {function(): function} positionalFactory
+	 *
 	 * @description The function used internally to create PositionalValue objects.
+	 *
 	 * @returns {function} The positional value creation function.
 	 */
 	get positionalFactory () {
@@ -192,9 +223,10 @@ class CommandBaseBuilder {
 	}
 
 	/**
-	 * @setter
 	 * @description Overrides the default parameter creation mechanism, allowing advanced customization of parameter behavior.
+	 *
 	 * @param {function} parameterFactory - The custom function to be used by the builder to construct parameters.
+	 *
 	 * @throws {Error} If the provided `parameterFactory` is not a function.
 	 */
 	set parameterFactory (parameterFactory) {
@@ -210,7 +242,9 @@ class CommandBaseBuilder {
 
 /**
  * @class CommandBuilder
+ *
  * @extends CommandBaseBuilder
+ *
  * @description Represents a single, specific command within the overall application structure.
  * This builder manages the configuration (name, aliases, options, subcommands) of one command
  * and provides the interface to manipulate it before it is instantiated.
@@ -218,9 +252,11 @@ class CommandBaseBuilder {
 export class CommandBuilder extends CommandBaseBuilder {
 	/**
 	 * @constructor
+	 *
+	 * @description Initializes the command builder. The parent reference is critical for hierarchical traversal (e.g., finding the root Program).
+	 *
 	 * @param {Command | CommandBuilder | ProgramBuilder} command - The existing Command or builder object this context is operating on.
 	 * @param {CommandBuilder|ProgramBuilder} parent - The parent builder context that contains this command.
-	 * @description Initializes the command builder. The parent reference is critical for hierarchical traversal (e.g., finding the root Program).
 	 */
 	constructor (command, parent) {
 		super (command || new Command );
@@ -233,6 +269,7 @@ export class CommandBuilder extends CommandBaseBuilder {
 
 	/**
 	 * @property {Command} object
+	 *
 	 * @description Getter that exposes the underlying Command object that this builder is configuring.
 	 * @returns {Command} The actual Command instance, allowing inspection or modification of its state.
 	 */
@@ -255,7 +292,9 @@ export class CommandBuilder extends CommandBaseBuilder {
 
 	/**
 	 * @property {CommandBuilder|ProgramBuilder|null} parent
+	 *
 	 * @description Getter that provides a reference to the immediate parent builder in the hierarchy.
+	 *
 	 * @returns {CommandBuilder|ProgramBuilder|null} The parent builder instance, used for traversing up the command structure.
 	 */
 	get parent () {
@@ -264,6 +303,7 @@ export class CommandBuilder extends CommandBaseBuilder {
 
 	/**
 	 * @description Sets the main executable name for this command. If a command with this name already exists, it will be overwritten.
+	 *
 	 * @param {string} name - The desired, primary name for this command.
 	 * @returns {CommandBuilder} The current CommandBuilder instance, facilitating method chaining.
 	 * @throws {Error} Throws an error if the provided name is not a string or is an empty string.
@@ -288,8 +328,11 @@ export class CommandBuilder extends CommandBaseBuilder {
 
 	/**
 	 * @description Adds one or more aliases (alternative keywords) to the command, allowing multiple ways to invoke the same functionality.
+	 *
 	 * @param {...string} aliases - A variable list of alternative names (aliases) that can map to this command.
+	 *
 	* @returns {CommandBuilder} The current CommandBuilder instance, allowing for continuous method calls.
+	*
 	 * @throws {Error} Throws an error if any provided alias is not a string or is an empty string.
 	 */
 	aliases () {
@@ -334,7 +377,9 @@ export class ProgramBuilder extends CommandBaseBuilder {
 
 	/**
 	 * @property {Program} program
+	 *
 	 * @description Getter that exposes the underlying Program object that this builder is configuring.
+	 *
 	 * @returns {Program} The actual Program instance, representing the application's definition.
 	 */
 	get program () {
@@ -343,7 +388,9 @@ export class ProgramBuilder extends CommandBaseBuilder {
 
 	/**
 	 * @description Sets the main name under which the application is recognized.
+	 *
 	 * @param {string} name - The name of the application program.
+	 *
 	 * @returns {ProgramBuilder} The current ProgramBuilder instance, enabling method chaining.
 	 */
 	name (name) {
@@ -353,7 +400,9 @@ export class ProgramBuilder extends CommandBaseBuilder {
 
 	/**
 	 * @description Sets the version number metadata for the program, which is used in version reporting.
+	 *
 	 * @param {number|string} version - The version identifier for the program (e.g., "1.0.0" or 1).
+	 *
 	 * @returns {ProgramBuilder} The current ProgramBuilder instance, allowing for method chaining.
 	 */
 	version (version) {
