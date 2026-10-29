@@ -1,8 +1,8 @@
 # Getting Started
 
-## Describe program
+## Program Description
 
-The {ProgramBuilder} class is the simplest way to describe a new program with its options, positional arguments and sub commands.
+The `ProgramBuilder` class is the simplest way to describe a new program with its options, positional arguments, and subcommands.
 
 ```javascript
 import { ProgramBuilder } from "@noresources/command"
@@ -27,18 +27,18 @@ builder.name('getting-started')
 		'documentation': 'Something'
 	}).handler (main) // The main program handler
 	.command ({
-		'names': ['addition', 'add'], // First name is the main name, others are aliases
+		'names': ['addition', 'add'], // The first name is the main name, others are aliases
 		// Options can also be declared here
 		'options': [{
 			'type': 'switch',
 			'names': ['r', 'round'],
-			// This name will be used in Input.options object instead of "round" from names.
+			// This name will be used in the Input.options object instead of "round" from names.
 			'property': 'roundOperands',
 			'documentation': 'Round input numbers before adding'
 		}, {
 			'type': 'variadic',
 			'names': ['exclude', 'x'],
-			'documentation': 'Excludes those number from allowed input values.',
+			'documentation': 'Excludes those numbers from allowed input values.',
 			'parameters': 'number' // A short way to define parameter constraints
 		}]
 	}).option ({
@@ -53,20 +53,19 @@ builder.name('getting-started')
 		'parameters': 'number',
 		'documentation': 'All the values to add to initial value.'
 	}).handler(addition);
-	
 ```
 
-## Writing and attaching command handlers
+## Writing and Attaching Command Handlers
 
-A  command handler is a simple function that will receive a unique {Input} argument.
-The {Input} class hods the values of all options and positional arguments set on the command line.
+A command handler is a simple function that receives a unique `Input` argument.
+The `Input` class holds the values of all options and positional arguments set on the command line.
 
-Here is the main handler of the program described above.
+Here is the main handler for the program described above.
 
 ```javascript
 function main (input) {
 	// If option.property is not user-defined,
-	// The first long option nmae will be used as property name for the option.
+	// The first long option name will be used as the property name for the option.
 	if (input.options.verbose) {
 		console.log ('This is the main program handler.');
 	}
@@ -74,25 +73,25 @@ function main (input) {
 	console.log (input.options.messagePrefix, input.arguments[0]);
 }
 ```
+See the [CommandHandlerAndMiddlewares](tutorial) tutorial.
 
-## Create Commander.js program
 
-For now, this package does not provide a command line parser by itself. It relies on well established parser [Commander.js](https://www.npmjs.com/package/commander)a to for parsing. 
+## Creating a Commander.js Program
 
-Converting a `@noresources/command` program to a `Commander.js` command is made with a simple function call.
+For now, this package does not provide a command line parser by itself. It relies on a well-established parser like [Commander.js](https://www.npmjs.com/package/commander) for parsing.
+
+Converting a `@noresources/command` program to a `Commander.js` command is done with a simple function call.
 
 ```javascript
-import {	createCommand } from '@noresources/command/commander'
+import { createCommand } from '@noresources/command/commander'
 
 const command = createCommand(builder.program);
 command.parse ();
-``` 
+```
 
-### Conversion notes
+### Conversion Notes
 
-* `input.options` properties follows `@noresources/command` naming rules.
-	* `Commander.js` always use the secondary (long) name
-	* `@noresources/command` uses the name given by `Option.property` or the FIRST long option name.
-* `input.arguments` used as an array is a plain list of values whereas `Commander.js` groups all values of a same variadic positional argument to an array.
-		To obtain a similar behavior in the `input.arguments` object, the {Positional} declaration must contain a `property` entry. In this case, `input.arguments.thePropertyName` will contain an array of values.
-
+*   The properties of `input.options` follow `@noresources/command` naming rules.
+    *   `Commander.js` always uses the secondary (long) name.
+    *   `@noresources/command` uses the name given by `Option.property` or the FIRST long option name.
+*   When `input.arguments` is used as an array, it is a plain list of values, whereas `Commander.js` groups all values of the same variadic positional argument into an array. To obtain similar behavior in the `input.arguments` object, the `Positional` declaration must contain a `property` entry. In this case, `input.arguments.thePropertyName` will contain an array of values.

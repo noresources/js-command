@@ -43,6 +43,13 @@ function addition (input) {
 	console.log (operands.join(' + '),  '=', value);
 }
 
+function addCommandNameToInput (input) {
+	const name = this.name || 'anonymous';
+	if (!(name in input)) {
+		input[name] = this;
+	}
+}
+
 function dump (input) {
 	console.log('Commands');
 	input.commands.forEach (c => {
@@ -64,7 +71,11 @@ function dump (input) {
 		if (standard.includes (name)) {
 			return;
 		}
-		console.log (name, input[name]);
+		let value = input[name];
+		if (typeof value === 'object') {
+			value = value.constructor.name;
+		}
+		console.log ('User-defined',  name, value);
 	});
 }
 
@@ -115,17 +126,22 @@ builder.name('getting-started')
 		'parameters': 'number',
 		'documentation': 'All the values to add to initial value.'
 	}).handler(addition);
+'foo';
+
+// Applies to ALL commands
+builder.middlewares([addCommandNameToInput]);
 	
 builder.command ({
 	'names': ['foo'],
 	'handler': dump
 }).command ({
 	'names': ['bar'],
+	'middlewares': [addCommandNameToInput], // Called in bar and baz handlers"
 	'handler': dump
 }).command ({
 	'names': ['baz'],
 	'handler': dump
-});
+}).middlewares([addCommandNameToInput]); // only for baz
 	
 // 2. Export to Commander.js
 	

@@ -21,6 +21,12 @@ Parameter
 Argument
 : A value given to an option value or a positional argument.
 
+Command Handler
+: A function that is invoked after command line arguments parsing to process the desired command action.
+
+Middleware
+: A function to invoke before the command handler.
+
 ## Naming conventions
 
 In commands, options and positionals descriptors,
