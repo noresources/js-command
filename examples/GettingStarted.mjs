@@ -43,6 +43,31 @@ function addition (input) {
 	console.log (operands.join(' + '),  '=', value);
 }
 
+function dump (input) {
+		console.log('Commands');
+		input.commands.forEach (c => {
+			console.log ('•', c.name);
+		});
+	
+	console.log ('Options');
+	for (const [name, value] of Object.entries(input.options) ) {
+		console.log('-', name, typeof value, value);
+	}
+	
+	console.log ('Arguments')
+	for (const a of input.arguments) {
+		console.log ('+', typeof a, a)
+	}
+	
+	const standard = ['commands', 'options', 'arguments'];
+	Object.keys (input).forEach (name => {
+		if (standard.includes (name)) {
+			return;
+		}
+		console.log (name, input[name]);
+	});
+}
+
 // 1. Describe the program
 const builder = new ProgramBuilder;
 
@@ -90,6 +115,17 @@ builder.name('getting-started')
 		'parameters': 'number',
 		'documentation': 'All the values to add to initial value.'
 	}).handler(addition);
+	
+builder.command ({
+	names: ['foo'],
+	'handler': dump
+}).command ({
+	names: ['bar'],
+	'handler': dump
+}).command ({
+	names: ['baz'],
+		'handler': dump
+});
 	
 // 2. Export to Commander.js
 	

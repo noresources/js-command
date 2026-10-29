@@ -5,7 +5,6 @@
  */
 
 import {
-	merge,
 	toCamelCase
 } from '@noresources/core';
 import {
@@ -24,6 +23,35 @@ import {
 } from '../Positionals.mjs';
 
 import * as commander from 'commander';
+
+function copyContext (context) {
+	const ctx = {
+		'names': [],
+		'properties': new Map(),
+		'commands': []
+	};
+	
+	if (context.names) {
+		context.names.forEach (n => {
+			ctx.names.push(n);
+		});
+	}
+	
+	if (context.properties) {
+		for (const [n, v] of context.properties.entries()) {
+			ctx.properties.set (n, v);
+		}
+	}
+	
+	if (context.commands) {
+		context.commands.forEach (c => {
+			ctx.commands.push(c);
+		});
+	}
+	
+	return ctx;
+}
+
 /**
  * @description Commander.js command handler adapter.
  * This function is designed to act as the final execution handler for a command.
@@ -295,8 +323,13 @@ export function createPositional (positional) {
  */
 export function createCommand (command, context) {
 	if (!(typeof context == 'object' && context)) {
-		context = {};
+		context = {
+			'commands': []
+		};
 	}
+	
+	context.commands.push(command);
+	
 	const cmd = new commander.Command ();
 	cmd.name (command.name);
 	if (command instanceof Command) {
@@ -318,8 +351,7 @@ export function createCommand (command, context) {
 	});
 
 	command.commands.forEach (c => {
-		const ctx = merge ({'commands': []}, context);
-		ctx.commands.push (command);
+		const ctx = copyContext (context);
 		cmd.addCommand( createCommand(c, ctx) );
 	});
 
@@ -339,5 +371,7 @@ export function createCommand (command, context) {
 }
 
 export default {
-	createOption
+	createCommand,
+	createOption,
+	createPositional
 };
