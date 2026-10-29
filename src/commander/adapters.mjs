@@ -9,7 +9,8 @@ import {
 } from '@noresources/core';
 import {
 	Command,
-	Program
+	Program,
+	invoke
 } from '../Command.mjs';
 import {
 	OPTION_TYPE
@@ -24,6 +25,9 @@ import {
 
 import * as commander from 'commander';
 
+/**
+ * @private
+ */
 function copyContext (context) {
 	const ctx = {
 		'names': [],
@@ -53,13 +57,7 @@ function copyContext (context) {
 }
 
 /**
- * @description Commander.js command handler adapter.
- * This function is designed to act as the final execution handler for a command.
- * It gathers positional arguments, processes options, and invokes the
- * registered handler function, passing a fully populated Input object.
- * @function commandHandler
- * @returns {number} The result of the handler invocation, typically used as the process exit code.
- * @throws {Error} Throws an error if unexpected positional arguments are encountered.
+ * @private
  */
 function commandHandler() {
 	const input = new Input;
@@ -68,14 +66,11 @@ function commandHandler() {
 	/* options */ array.pop();
 	const options = cmd.optsWithGlobals();
 
-	let command = this.context;
+	let command = this.commands[this.commands.length - 1];
 	if (array.length) 	 {
 		const positionals = command.positionals;
 		if (!positionals) {
-			/**
-			 * @todo Better message
-			 */
-			throw new Error ('Unexpected positional argument(s)');
+			throw new Error (command.name + ' does not expect any positional argument.');
 		}
 
 		const dispatched = [];
@@ -102,15 +97,11 @@ function commandHandler() {
 		});
 	}
 
-	if (Array.isArray (this.commands)) {
-		this.commands.forEach (a => input.commands.push (a));
-	} else if (this.command) {
-		input.commands.push(this.command);
-	}
+	this.commands.forEach (a => input.commands.push (a));
 
 	for (const e of Object.entries (options)) {
 		let [name, value] = e;
-		const option = this.options.get (name);
+		const option = this.properties.get (name);
 		name = option.property;
 
 		if (option.type == OPTION_TYPE.VARIADIC) {
@@ -127,8 +118,7 @@ function commandHandler() {
 		input.options[name] = value;
 	}
 
-	const contextArg = this.context || {};
-	return this.handler.apply (contextArg, [input]);
+	return invoke (this.commands, input);
 }
 
 /**
@@ -356,15 +346,8 @@ export function createCommand (command, context) {
 	});
 
 
-	const handler = command.handler;
-	if (typeof handler === 'function') {
-		const ctx = {
-			'context': command,
-			handler,
-			'options': context.properties,
-			'commands': context.commands
-		};
-		cmd.action (commandHandler.bind (ctx));
+	if (typeof command.handler === 'function') {
+		cmd.action (commandHandler.bind (context));
 	}
 
 	return cmd;
