@@ -18,7 +18,7 @@ import {
 	Input
 } from '../Input.mjs';
 import {
-	createPositionalArgumentResult,
+	createPositionalArgumentContainerProxy,
 	POSITIONAL_TYPE
 } from '../Positionals.mjs';
 
@@ -97,7 +97,7 @@ function commandHandler() {
 				'values': Array.isArray(a) ? a : [a]
 			});
 		}
-		input.arguments = createPositionalArgumentResult(positionals, dispatched, {
+		input.arguments = createPositionalArgumentContainerProxy(positionals, dispatched, {
 			'dispatched': true
 		});
 	}

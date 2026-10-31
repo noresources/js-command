@@ -44,19 +44,19 @@ function addition (input) {
 }
 
 function dump (input) {
-		console.log('Commands');
-		input.commands.forEach (c => {
-			console.log ('•', c.name);
-		});
+	console.log('Commands');
+	input.commands.forEach (c => {
+		console.log ('•', c.name);
+	});
 	
 	console.log ('Options');
 	for (const [name, value] of Object.entries(input.options) ) {
 		console.log('-', name, typeof value, value);
 	}
 	
-	console.log ('Arguments')
+	console.log ('Arguments');
 	for (const a of input.arguments) {
-		console.log ('+', typeof a, a)
+		console.log ('+', typeof a, a);
 	}
 	
 	const standard = ['commands', 'options', 'arguments'];
@@ -117,14 +117,14 @@ builder.name('getting-started')
 	}).handler(addition);
 	
 builder.command ({
-	names: ['foo'],
+	'names': ['foo'],
 	'handler': dump
 }).command ({
-	names: ['bar'],
+	'names': ['bar'],
 	'handler': dump
 }).command ({
-	names: ['baz'],
-		'handler': dump
+	'names': ['baz'],
+	'handler': dump
 });
 	
 // 2. Export to Commander.js

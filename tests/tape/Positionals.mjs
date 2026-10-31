@@ -67,13 +67,13 @@ function testDispatchPositionalValues(t, cases) {
 		if (test.throws) {
 			const expected = (typeof test.throws === 'object') ? test.throws : undefined;
 			t.throws (function () {
-				Module.createPositionalArgumentResult(positionals, values);
+				Module.createPositionalArgumentContainerProxy(positionals, values);
 			}, expected, label);
 			return;
 		}
 		
 		if (test.dispatched) {
-			actual = Module.createPositionalArgumentResult(positionals, values, {
+			actual = Module.createPositionalArgumentContainerProxy(positionals, values, {
 				'dispatchOnly': true
 			});
 			actual = actual.map (e => {
@@ -82,7 +82,7 @@ function testDispatchPositionalValues(t, cases) {
 			t.same (actual, test.dispatched, label);
 		}
 		if (test.expected) {
-			actual = Module.createPositionalArgumentResult(positionals, values);
+			actual = Module.createPositionalArgumentContainerProxy(positionals, values);
 			if ('length' in test.expected) {
 				t.equal (actual.length, test.expected.length, label + ' proxy length');
 			}

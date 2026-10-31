@@ -31,6 +31,8 @@ export const POSITIONAL_TYPE = {
 	'VARIADIC': 'variadic'
 };
 
+const OFFSET_PATTERN = /^(?:0|(?:[1-9][0-9]*))$/;
+
 /**
  * @abstract
  * @class Positional
@@ -298,6 +300,165 @@ export function createPositional(type, options) {
 }
 
 /**
+ * Container for positional arguments values
+ * This container has both the behavior of a list (Array) and a Map.
+ *
+ */
+export class PositionalArgumentContainer {
+	constructor () {
+		this._array = [];
+		this._flat = [];
+		this._map = new Map();
+	}
+	
+	/**
+	 * Iterates on all positional arguments values
+	 *
+	 * @return {Iterator}
+	 */
+	[Symbol.iterator] () {
+		const flat = Reflect.get (this, '_flat');
+		let i = 0;
+		const iterator = {
+			next() {
+				if (i < flat.length) {
+					return {'value': flat[i++],
+						'done': false};
+				}
+				return {'done': true};
+			}
+		};
+		return iterator;
+	}
+	
+	/**
+	 * Gets the number of positional arguments groups
+	 *
+	 * @returns {number} Number of positional arguments group
+	 */
+	get size () {
+		return this._map.size();
+	}
+	
+	/**
+	 * @returns {number} Total number of positional arguments values.
+	 */
+	get length () {
+		return Reflect.get(this, '_flat').length;
+	}
+	
+	/**
+	 * Gets the property names associated to each {@link Positional} group.
+	 *
+	 * @notes Wen a {@link Positional} did not provide a property name, the position offset is used ..
+	 *
+	 * @returns {Iterator} Iterator on positional property keys
+	 */
+	keys () {
+		return Reflect.get(this, '_map').keys();
+	}
+	
+	/**
+	 * @returns {Iterator} Iterator where keys are the associated property names and values are the positional argument value or array of values.
+	 */
+	entries () {
+		return Reflect.get(this, '_map').entries();
+	}
+	
+	/**
+	 * Indicates if the given property name is associated with a positional argument value or set of value.
+	 *
+	 * @param {string|number} property - {Positional} property or position
+	 *
+	 * @returns {boolean}
+	 */
+	has (property) {
+		if (Reflect.get(this, '_map').has (property)) {
+			return true;
+		}
+		
+		if (typeof property === 'string') {
+			if (!isNaN(property) && property.match (OFFSET_PATTERN)) {
+				property = parseInt(property);
+			}
+		}
+		
+		if (typeof property === 'number') {
+			if (!Number.isInteger(property)) {
+				return false;
+			}
+			return (property >= 0) && (property < Reflect.get(this, '_array').length);
+		}
+		
+		return Reflect.has (this, property);
+	}
+	
+	/**
+	 * Get the value or array of values of the positional argument associated to the given position or property name.
+	 *
+	 * @param {string|number} property - {Positional} property name or position.
+	 *
+	 * @returns {Array<mixed>|mixed} Positional argument value or array of values associated with the given property name.
+	 */
+	get (property) {
+		if (Reflect.get(this, '_map').has (property)) {
+			return Reflect.get(this, '_map').get(property);
+		}
+		
+		if (typeof property === 'string') {
+			if (!isNaN(property) && property.match (OFFSET_PATTERN)) {
+				property = parseInt(property);
+			}
+		}
+
+		if (typeof property === 'number') {
+			if (!Number.isInteger(property)) {
+				return false;
+			}
+			if ((property >= 0) && (property < Reflect.get(this, '_array').length)) {
+				return Reflect.get (this, '_array')[property];
+			}
+		}
+		
+		return Reflect.get (this, property);
+	}
+	
+	/**
+	 * Executes a function for rach positional arguments values.
+	 *
+	 * @param {function} callback - Function to call for each element. The function willl receive the positional argument value and its position.
+	 */
+	forEach () {
+		return Reflect.get(this, '_flat').forEach(...arguments);
+	}
+	
+	/**
+	 * Crezates a proxy object that will allow array access operator.
+	 */
+	createProxy () {
+		return new Proxy (this, {
+			has (target, property) {
+				if (typeof property === 'symbol') {
+					return property === Symbol.iterator;
+				}
+				const h = Reflect.get (target, 'has');
+				return h.apply(target, [property]);
+			},
+			get (target, property) {
+				if (typeof property === 'symbol') {
+					if (property === Symbol.iterator) {
+						return Reflect.get (target, property);
+					}
+				}
+				const g = Reflect.get (target, 'get');
+				return g.apply (target, [property]);
+				
+			}
+		});
+	}
+}
+
+/**
  * @param {Array<Positional>} positionals - An array of Positional objects defining the expected argument slots.
  * @param {Array<any>} values - The raw array of values received from the caller.
  * @param {object} [options] - Optional settings to control the dispatch process.
@@ -307,7 +468,7 @@ export function createPositional(type, options) {
  * @returns {Proxy} A Proxy object that mimics an array-like structure for the collection of all received values.
  * @throws {Error} If the number of values provided does not match the minimum required count, or if too many values are provided for the current structure.
  */
-export function createPositionalArgumentResult(positionals, values, options) {
+export function createPositionalArgumentContainerProxy(positionals, values, options) {
 	options = merge ({}, options);
 	const dispatched =  options.dispatched
 		? Array.from (values)
@@ -318,8 +479,7 @@ export function createPositionalArgumentResult(positionals, values, options) {
 	}
 	
 	
-	const object = {};
-	const array = [];
+	const container = new PositionalArgumentContainer();
 	dispatched.forEach((e, i) => {
 		const p = positionals[i];
 		if (e.values.length == 0) {
@@ -327,59 +487,22 @@ export function createPositionalArgumentResult(positionals, values, options) {
 				e.values.push (p.default);
 			}
 		}
-		if (e.property) {
-			object[e.property] = (p.type == POSITIONAL_TYPE.VALUE)
-				? e.values[0]
-				: e.values;
+		
+		const property = e.property || p.property || i.toString();
+		const value = (p.type === POSITIONAL_TYPE.VARIADIC)
+			? Array.from (e.values)
+			: e.values[0];
+		container._map.set (property, value);
+		container._array.push(value);
 
-		}
-
-
-		e.values.forEach (v => array.push (v));
+		e.values.forEach (v => {
+			container._flat.push (v);
+		});
 	});
 
-
-	return new Proxy ({
-		object,
-		array
-	}, {
-		has (o, k) {
-			return (k == 'length')
-				|| [Symbol.iterator,
-					'keys', 'entries', 'values',
-					'length'].includes (k);
-		},
-		get (o, k) {
-			if (k in o.object) {
-				return  o.object[k];
-			}
-
-			if (typeof k === 'symbol') {
-				switch (k) {
-				case Symbol.iterator: return o.array[k];
-				}
-			}
-			
-			if (!isNaN(k)) {
-				if (k < 0 || k >= o.array.length) {
-					throw new RangeError (k + ' is not a valid offset. Expected [0, ' + o.array.length + ']');
-				}
-				return o.array[k];
-			}
-
-
-			switch (k) {
-			case 'length':
-			case 'values': {
-				return o.array[k];
-			}
-			case 'entries':
-			case 'keys': {
-				return Object[k](o.object);
-			}
-			}
-		}
-	});
+	
+	return container.createProxy();
+	
 }
 
 /**
@@ -489,5 +612,5 @@ export default {
 	PositionalValue,
 	PositionalVariadic,
 	createPositional,
-	createPositionalArgumentResult,
+	createPositionalArgumentContainerProxy,
 };

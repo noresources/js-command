@@ -38,10 +38,11 @@ import Parameters, {
 import Positionals, {
 	POSITIONAL_TYPE,
 	Positional,
+	PositionalArgumentContainer,
 	PositionalValue,
 	PositionalVariadic,
 	createPositional,
-	createPositionalArgumentResult
+	createPositionalArgumentContainerProxy
 } from './src/Positionals.mjs';
 import {
 	transformParameterProperty
@@ -75,10 +76,11 @@ export {
 	Parameters,
 	POSITIONAL_TYPE,
 	Positional,
+	PositionalArgumentContainer,
 	PositionalValue,
 	PositionalVariadic,
 	createPositional,
-	createPositionalArgumentResult,
+	createPositionalArgumentContainerProxy,
 	Positionals,
 	transformParameterProperty
 };
@@ -111,10 +113,11 @@ export default {
 	Parameters,
 	POSITIONAL_TYPE,
 	Positional,
+	PositionalArgumentContainer,
 	PositionalValue,
 	PositionalVariadic,
 	createPositional,
-	createPositionalArgumentResult,
+	createPositionalArgumentContainerProxy,
 	Positionals,
 	transformParameterProperty
 };
