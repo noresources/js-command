@@ -63,14 +63,19 @@ export class Parameter {
 		this.type = type || '*';
 		this._documentation = undefined;
 		if (typeof descriptor === 'object' && descriptor !== null) {
-			for (const [name, value] of Object.entries(descriptor)) {
-				/**
-				 * @todo test if name is a setter instead of checking against "undefined"
-				 */
-				if (!(name in this) || (typeof this[name] === 'undefined')) {
-					this[name] = value;
+			Object.entries (descriptor).forEach(e => {
+				const [name, value] = e;
+				if (name in this) {
+					if (typeof this.name === 'function') {
+						return;
+					}
 				}
-			}
+				const d = Object.getOwnPropertyDescriptor(this.constructor.prototype, name);
+				if (d && typeof d.set !== 'function') {
+					return;
+				}
+				this[name] = value;
+			});
 		}
 	}
 
