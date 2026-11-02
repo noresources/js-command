@@ -37,7 +37,13 @@
 			},
 			"./index.mjs"
 		],
-		"./src/lib/options": [
+		"./commander": [
+			{
+				"import": "./src/commander/index.mjs"
+			},
+			"./src/commander/index.mjs"
+		],
+		"./lib/options": [
 			{
 				"import": "./src/lib/options/index.mjs"
 			},
