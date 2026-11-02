@@ -4,7 +4,7 @@
 	"description": "A lightweight command line interface definition package focusing on reusability, extensibility and a clean API",
 	"main": "index.js",
 	"scripts": {
-		"test": "tape tests/tape/*.mjs",
+		"test": "tape tests/tape/*.mjs tests/tape/commander/*.mjs tests/tape/fs/*.mjs",
 		"lint": "eslint --fix",
 		"doc": "jsdoc --recurse -c resources/jsdoc/configuration.json --readme README.md --tutorials resources/jsdoc/tutorials --destination doc src/"
 	},
@@ -42,6 +42,12 @@
 				"import": "./src/commander/index.mjs"
 			},
 			"./src/commander/index.mjs"
+		],
+		"./fs": [
+			{
+				"import": "./src/fs/index.mjs"
+			},
+			"./src/fs/index.mjs"
 		],
 		"./lib/options": [
 			{

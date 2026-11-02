@@ -1,0 +1,17 @@
+{
+	"name": "@noresources/command/fs",
+	"type": "module",
+	"module": "./index.mjs",
+	"files": [
+		"./PathParameters.mjs",
+		"./index.mjs"
+	],
+	"exports": {
+		".": [
+			{
+				"import": "./index.mjs"
+			},
+			"./index.mjs"
+		]
+	}
+}
