@@ -75,3 +75,6 @@ command.parse ();
 ``` 
 Note that the `commander` package is not included in `@noresources/command` package dependencies. You have to install it manually to usie this feature.
 
+## External links
+* [NPM package page](https://www.npmjs.com/package/@noresources/command)
+* [Github repository](https://github.com/noresources/js-command)
