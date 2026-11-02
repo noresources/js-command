@@ -26,7 +26,8 @@
 	},
 	"type": "module",
 	"files": [
-		"./src"
+		"./src",
+		"./index.mjs"
 	],
 	"module": "./index.mjs",
 	"exports": {
