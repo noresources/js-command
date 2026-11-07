@@ -209,14 +209,14 @@ export class Program extends CommandBase {
  * @param {Input} input - Command handler input argument
  * @returns {mixed} Result of the last command handler invocation
  */
-export function invoke(commands, input) {
+export async function invoke(commands, input) {
 	const command = commands[commands.length - 1];
 	const args = [input];
-	commands.forEach (c => {
-		c.middlewares.forEach (m => {
-			m.apply(c, args);
-		});
-	});
+	for (const c of commands) {
+		for (const m of c.middlewares) {
+			await m.apply(c, args);
+		}
+	}
 	
 	return command.handler.apply(command, args);
 }
