@@ -67,13 +67,13 @@ function commandHandler() {
 	const options = cmd.optsWithGlobals();
 
 	let command = this.commands[this.commands.length - 1];
+	const positionals = command.positionals;
+	const dispatched = [];
 	if (array.length) 	 {
-		const positionals = command.positionals;
 		if (!positionals) {
 			throw new Error (command.name + ' does not expect any positional argument.');
 		}
 
-		const dispatched = [];
 		for (let i = 0; i < Math.min(positionals.length, array.length); ++i) {
 			const p = positionals[i];
 			let a = array[i];
@@ -92,10 +92,11 @@ function commandHandler() {
 				'values': Array.isArray(a) ? a : [a]
 			});
 		}
-		input.arguments = createPositionalArgumentContainerProxy(positionals, dispatched, {
-			'dispatched': true
-		});
 	}
+	
+	input.arguments = createPositionalArgumentContainerProxy(positionals, dispatched, {
+		'dispatched': true
+	});
 
 	this.commands.forEach (a => input.commands.push (a));
 
