@@ -231,7 +231,7 @@ export function buildParameterDeclaration (parameter, options) {
  * @param {Array<string>} [context.names] - A list of option names already consumed by other options during the current build phase.
  * @param {Map<string, Option>} [context.properties] - A map tracking the conversion from commander property names back to the Option object.
  * @returns {commander.Option} A ready-to-use commander.js Option instance, complete with arguments and defaults.
- * @throws {commander.Error} Throws if the option cannot be assigned a unique name.
+ * @throws {Error} Throws if the option cannot be assigned a unique name.
  */
 export function createOption (option, context) {
 	if (!context) {
@@ -240,7 +240,7 @@ export function createOption (option, context) {
 	const excludes = Array.isArray(context.names) ? context.names : [];
 	const names = selectOptionNames(option, excludes);
 	if (names.length == 0) {
-		throw new commander.Error('Missing or conflicting option names');
+		throw new Error('Missing or conflicting option names');
 	}
 
 	const longName = names[names.length - 1];
