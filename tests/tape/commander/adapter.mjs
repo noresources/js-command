@@ -87,3 +87,71 @@ test ('Command stack', function (t) {
 		
 	t.end ();
 });
+
+
+test ('Option name mapping', function (t) {
+	
+	const cases = [
+		{
+			'label': 'No conflicts',
+			
+			'names': ['foo', 'f'],
+			
+			'excludes': [],
+			
+			'long': '--foo',
+			'short': '-f'
+		}, {
+			'label': 'Fully conflicting',
+			
+			'names': ['f', 'foo'],
+			'excludes': ['foo', 'f'],
+			
+			'throws': true
+		}, {
+			'label': 'Partial conflict',
+			
+			'names': ['foo', 'f'],
+			'excludes': ['f'],
+			'long': '--foo',
+			'short': undefined
+		}, {
+			'label': 'Fallback to kebabized property',
+			
+			'property': 'theBar',
+			'names': ['foo', 'f'],
+			'excludes': ['f', 'foo'],
+			
+			'long': '--the-bar'
+		}
+	];
+	
+	cases.forEach(test => {
+		const option = new Options.SwitchOption ({
+			'names': test.names,
+			'property': test.property
+		});
+		
+		const assertion = test.throws
+			? t.throws
+			: t.doesNotThrow;
+			
+		let actual;
+		assertion.apply(t, [function () {
+			actual = adapter.createOption(option, {
+				'names': test.excludes || []
+			});
+		}, test.label]);
+		if (!actual) {
+			return;
+		}
+		for (const p of ['long', 'short']) {
+			if (test[p]) {
+				t.equal (actual[p], test[p], test.label + ' - '+p+' name');
+			}
+		}
+		
+	});
+	
+	t.end ();
+});

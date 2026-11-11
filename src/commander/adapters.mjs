@@ -5,7 +5,8 @@
  */
 
 import {
-	toCamelCase
+	toCamelCase,
+	toKebabCase
 } from '@noresources/core';
 import {
 	Command,
@@ -24,6 +25,13 @@ import {
 } from '../Positionals.mjs';
 
 import * as commander from 'commander';
+
+/**
+ * @private
+ */
+function optionLabel (option) {
+	return option.property + ' ' + option.type + ' option';
+}
 
 /**
  * @private
@@ -170,6 +178,15 @@ export function selectOptionNames (option, excludes) {
 	if (alt && names.length < 2) {
 		names.push (alt);
 	}
+	
+	if (names.length == 0) {
+		const fallback = toKebabCase(option.property);
+		if ( ! excludes.includes(fallback)) {
+			names.push (fallback);
+		}
+		
+	}
+	
 	return names;
 }
 
@@ -240,7 +257,7 @@ export function createOption (option, context) {
 	const excludes = Array.isArray(context.names) ? context.names : [];
 	const names = selectOptionNames(option, excludes);
 	if (names.length == 0) {
-		throw new Error('Missing or conflicting option names');
+		throw new Error('No suitable option name found for ' + optionLabel(option) + ': Missing or conflicting option names and/or property.' );
 	}
 
 	const longName = names[names.length - 1];
