@@ -95,9 +95,18 @@ builder.name('getting-started')
 		'names': ['m', 'prefix'],
 		// User defined option map property name (see main function)
 		'property': 'messagePrefix',
-		'default': 'Hello'
+		'default': 'Hello',
+		'parameter': {
+			'type': 'string',
+			'minLength': 3
+		}
 	}).positional ({
-		'documentation': 'Something'
+		'documentation': 'Something',
+		'parameter': {
+			'type': 'string',
+			'minLength': 4,
+			'maxLength': 16
+		}
 	}).handler (main) // The main program handler
 	.command ({
 		'names': ['addition', 'add'], // First name is the main name, others are aliases

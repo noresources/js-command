@@ -87,12 +87,22 @@ function commandHandler() {
 			let a = array[i];
 			
 			if (p.type == POSITIONAL_TYPE.VALUE) {
-				a = p.parse (a);
+				try {
+					a = p.parse (a);
+				} catch (error) {
+					console.error (error.message);
+					return 1;
+				}
 			} else if (p.type == POSITIONAL_TYPE.VARIADIC) {
 				if (!Array.isArray(a)) {
 					throw new Error ('Array expected');
 				}
-				a = a.map(v => p.parse(v));
+				try {
+					a = a.map(v => p.parse(v));
+				} catch (error) {
+					console.error (error.message);
+					return 1;
+				}
 			}
 			
 			dispatched.push ({
@@ -116,12 +126,22 @@ function commandHandler() {
 		if (option.type == OPTION_TYPE.VARIADIC) {
 			const list = [];
 			value.forEach (v => {
-				v = option.parse (v);
+				try {
+					v = option.parse (v);
+				} catch (error) {
+					console.error (error.message);
+					return 1;
+				}
 				list.push(v);
 			});
 			value = list;
 		} else {
-			value = option.parse (value);
+			try {
+				value = option.parse (value);
+			} catch (error) {
+				console.error (error.message);
+				return 1;
+			}
 		}
 
 		input.options[name] = value;

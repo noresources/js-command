@@ -9,6 +9,10 @@ import {
 } from './utilities.mjs';
 
 import {
+	ParsingError
+} from './ParsingError.mjs';
+
+import {
 	Parameter
 } from './Parameters.mjs';
 
@@ -17,6 +21,20 @@ import {
 	assertTypes,
 	merge
 } from '@noresources/core';
+
+
+/**
+ * @private
+ */
+function parseError (positional, error) {
+	const message = error.constructor.name
+	+ ' when parsing ' + (positional.property || 'positional') + ' ' + positional.type
+	+ ' - ' + error.message;
+	throw new ParsingError(message, {
+		'cause': error
+	});
+}
+
 
 /**
  * @constant {object} POSITIONAL_TYPE
@@ -150,8 +168,12 @@ export class PositionalValue extends Positional {
 		if (!(this.parameter instanceof Parameter)) {
 			return value;
 		}
-		value = this.parameter.coerce(value);
-		this.parameter.validate(value);
+		try {
+			value = this.parameter.coerce(value);
+			this.parameter.validate(value);
+		} catch (error) {
+			parseError(this, error);
+		}
 		return value;
 	}
 }
@@ -232,8 +254,12 @@ export class PositionalVariadic extends Positional {
 		if (!(this.parameters instanceof Parameter)) {
 			return value;
 		}
-		value = this.parameters.coerce (value);
-		this.parameters.validate(value);
+		try {
+			value = this.parameters.coerce (value);
+			this.parameters.validate(value);
+		} catch (error) {
+			parseError(this, error);
+		}
 		return value;
 	}
 }

@@ -5,6 +5,11 @@ import {
 } from './utilities.mjs';
 
 import {
+	ParsingError
+} from './ParsingError.mjs';
+
+
+import {
 	merge,
 	toCamelCase,
 	isTraversable,
@@ -17,9 +22,22 @@ import {
 } from './Documentation.mjs';
 
 import {
+	CoercionError,
 	Parameter
 } from './Parameters.mjs';
 
+
+/**
+ * @private
+ */
+function parseError (option, error) {
+	const message = error.constructor.name
+	+ ' when parsing ' + option.property + ' ' + option.type
+	+ ' - ' + error.message;
+	throw new ParsingError(message, {
+		'cause': error
+	});
+}
 
 /**
  * @typedef {Object.<string, string>} OptionTypeMap
@@ -298,11 +316,12 @@ export class CounterOption extends Option {
 	 * successfully parsed into an integer.
 	 */
 	parse (value) {
-		value = parseInt (value);
-		if (isNaN(value)) {
-			throw new Error ('Could not convert value to integer');
+		
+		if (!Number.isInteger(parseFloat(value))) {
+			parseError (this, new CoercionError ('Could not convert value to integer'));
 		}
-		return value;
+		
+		return parseInt (value);
 	}
 }
 
@@ -368,8 +387,13 @@ export class ValueOption extends Option {
 		if (!(this.parameter instanceof Parameter)) {
 			return value;
 		}
-		value = this.parameter.coerce (value);
-		this.parameter.validate(value);
+		try {
+			value = this.parameter.coerce (value);
+			this.parameter.validate(value);
+		} catch (error) {
+			parseError(this, error);
+		}
+		
 		return value;
 	}
 }
@@ -435,8 +459,12 @@ export class VariadicOption extends Option {
 		if (!(this.parameters instanceof Parameter)) {
 			return value;
 		}
-		value = this.parameters.coerce (value);
-		this.parameters.validate(value);
+		try {
+			value = this.parameters.coerce (value);
+			this.parameters.validate(value);
+		} catch (error) {
+			parseError(this, error);
+		}
 		return value;
 	}
 }
